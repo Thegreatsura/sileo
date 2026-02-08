@@ -1,0 +1,21 @@
+{
+	"name": "sileo",
+	"version": "0.0.1",
+	"private": true,
+	"main": "./index.ts",
+	"types": "./index.ts",
+	"sideEffects": [
+		"./sileo.css"
+	],
+	"exports": {
+		".": "./index.ts",
+		"./sileo.css": "./sileo.css",
+		"./toast": "./toast.tsx"
+	},
+	"files": [
+		"sileo.tsx",
+		"toast.tsx",
+		"index.ts",
+		"sileo.css"
+	]
+}
