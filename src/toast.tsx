@@ -1,5 +1,3 @@
-"use client";
-
 import {
 	type CSSProperties,
 	type MouseEventHandler,
@@ -10,12 +8,13 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { Sileo } from "./sileo";
 import {
-	Sileo,
-	type SileoButton,
+	SILEO_POSITIONS,
+	type SileoOptions,
+	type SileoPosition,
 	type SileoState,
-	type SileoStyles,
-} from "./sileo";
+} from "./types";
 
 /* -------------------------------- Constants ------------------------------- */
 
@@ -24,40 +23,19 @@ const EXIT_DURATION = DEFAULT_DURATION * 0.1;
 const AUTO_EXPAND_DELAY = DEFAULT_DURATION * 0.025;
 const AUTO_COLLAPSE_DELAY = DEFAULT_DURATION - 2000;
 
-const TOAST_POSITIONS = [
-	"top-left",
-	"top-center",
-	"top-right",
-	"bottom-left",
-	"bottom-center",
-	"bottom-right",
-] as const;
-
-export type ToastPosition = (typeof TOAST_POSITIONS)[number];
-export type ToastButton = SileoButton;
-export type ToastStyles = SileoStyles;
+const pillAlign = (pos: SileoPosition) =>
+	pos.includes("right") ? "right" : pos.includes("center") ? "center" : "left";
+const expandDir = (pos: SileoPosition) =>
+	pos.startsWith("top") ? "bottom" as const : "top" as const;
 
 /* ---------------------------------- Types --------------------------------- */
 
-export interface ToastOptions {
-	title?: string;
-	description?: ReactNode | string;
-	position?: ToastPosition;
-	duration?: number | null;
-	icon?: ReactNode | null;
-	styles?: ToastStyles;
-	fill?: string;
-	roundness?: number;
-	autopilot?: boolean | { expand?: number; collapse?: number };
-	button?: ToastButton;
-}
-
-interface InternalToastOptions extends ToastOptions {
+interface InternalSileoOptions extends SileoOptions {
 	id?: string;
 	state?: SileoState;
 }
 
-interface ToastItem extends InternalToastOptions {
+interface SileoItem extends InternalSileoOptions {
 	id: string;
 	instanceId: string;
 	exiting?: boolean;
@@ -65,33 +43,33 @@ interface ToastItem extends InternalToastOptions {
 	autoCollapseDelayMs?: number;
 }
 
-type ToasterOffsetValue = number | string;
-type ToasterOffsetConfig = Partial<
-	Record<"top" | "right" | "bottom" | "left", ToasterOffsetValue>
+type SileoOffsetValue = number | string;
+type SileoOffsetConfig = Partial<
+	Record<"top" | "right" | "bottom" | "left", SileoOffsetValue>
 >;
 
-export interface ToasterProps {
+export interface SileoToasterProps {
 	children?: ReactNode;
-	position?: ToastPosition;
-	offset?: ToasterOffsetValue | ToasterOffsetConfig;
-	options?: Partial<ToastOptions>;
+	position?: SileoPosition;
+	offset?: SileoOffsetValue | SileoOffsetConfig;
+	options?: Partial<SileoOptions>;
 }
 
 /* ------------------------------ Global State ------------------------------ */
 
-type ToastListener = (toasts: ToastItem[]) => void;
+type SileoListener = (toasts: SileoItem[]) => void;
 
 const store = {
-	toasts: [] as ToastItem[],
-	listeners: new Set<ToastListener>(),
-	position: "top-right" as ToastPosition,
-	options: undefined as Partial<ToastOptions> | undefined,
+	toasts: [] as SileoItem[],
+	listeners: new Set<SileoListener>(),
+	position: "top-right" as SileoPosition,
+	options: undefined as Partial<SileoOptions> | undefined,
 
 	emit() {
 		for (const fn of this.listeners) fn(this.toasts);
 	},
 
-	update(fn: (prev: ToastItem[]) => ToastItem[]) {
+	update(fn: (prev: SileoItem[]) => SileoItem[]) {
 		this.toasts = fn(this.toasts);
 		this.emit();
 	},
@@ -101,7 +79,7 @@ let idCounter = 0;
 const generateId = () =>
 	`${++idCounter}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-const timeoutKey = (t: ToastItem) => `${t.id}:${t.instanceId}`;
+const timeoutKey = (t: SileoItem) => `${t.id}:${t.instanceId}`;
 
 /* ------------------------------- Toast API -------------------------------- */
 
@@ -120,7 +98,7 @@ const dismissToast = (id: string) => {
 };
 
 const resolveAutopilot = (
-	opts: InternalToastOptions,
+	opts: InternalSileoOptions,
 	duration: number | null,
 ): { expandDelayMs?: number; collapseDelayMs?: number } => {
 	if (opts.autopilot === false || !duration || duration <= 0) return {};
@@ -132,81 +110,71 @@ const resolveAutopilot = (
 	};
 };
 
-const createToast = (options: InternalToastOptions) => {
-	const live = store.toasts.filter((t) => !t.exiting);
-	const merged = {
-		...store.options,
-		...options,
-		styles: { ...store.options?.styles, ...options.styles },
+const mergeOptions = (options: InternalSileoOptions) => ({
+	...store.options,
+	...options,
+	styles: { ...store.options?.styles, ...options.styles },
+});
+
+const buildSileoItem = (
+	merged: InternalSileoOptions,
+	id: string,
+	fallbackPosition?: SileoPosition,
+): SileoItem => {
+	const duration = merged.duration ?? DEFAULT_DURATION;
+	const auto = resolveAutopilot(merged, duration);
+	return {
+		...merged,
+		id,
+		instanceId: generateId(),
+		position: merged.position ?? fallbackPosition ?? store.position,
+		autoExpandDelayMs: auto.expandDelayMs,
+		autoCollapseDelayMs: auto.collapseDelayMs,
 	};
+};
+
+const createToast = (options: InternalSileoOptions) => {
+	const live = store.toasts.filter((t) => !t.exiting);
+	const merged = mergeOptions(options);
 
 	const prev = merged.id
 		? live.find((t) => t.id === merged.id)
 		: live[live.length - 1];
 	const id = merged.id ?? prev?.id ?? generateId();
-	const instanceId = generateId();
-	const duration = merged.duration ?? DEFAULT_DURATION;
-	const auto = resolveAutopilot(merged, duration);
-
-	const item: ToastItem = {
-		...merged,
-		id,
-		instanceId,
-		position: merged.position ?? prev?.position ?? store.position,
-		autoExpandDelayMs: auto.expandDelayMs,
-		autoCollapseDelayMs: auto.collapseDelayMs,
-	};
+	const item = buildSileoItem(merged, id, prev?.position);
 
 	store.update(() => [item]);
-	return { id, duration };
+	return { id, duration: merged.duration ?? DEFAULT_DURATION };
 };
 
-const updateToast = (id: string, options: InternalToastOptions) => {
+const updateToast = (id: string, options: InternalSileoOptions) => {
 	const existing = store.toasts.find((t) => t.id === id);
 	if (!existing) return;
 
-	const merged = {
-		...store.options,
-		...options,
-		styles: { ...store.options?.styles, ...options.styles },
-	};
-
-	const instanceId = generateId();
-	const duration = merged.duration ?? DEFAULT_DURATION;
-	const auto = resolveAutopilot(merged, duration);
-
-	const item: ToastItem = {
-		...merged,
-		id,
-		instanceId,
-		position: merged.position ?? existing.position ?? store.position,
-		autoExpandDelayMs: auto.expandDelayMs,
-		autoCollapseDelayMs: auto.collapseDelayMs,
-	};
-
+	const item = buildSileoItem(mergeOptions(options), id, existing.position);
 	store.update((prev) => prev.map((t) => (t.id === id ? item : t)));
 };
 
-export interface ToastPromiseOptions<T = unknown> {
-	loading: Pick<ToastOptions, "title" | "icon">;
-	success: ToastOptions | ((data: T) => ToastOptions);
-	error: ToastOptions | ((err: unknown) => ToastOptions);
-	action?: ToastOptions | ((data: T) => ToastOptions);
+export interface SileoPromiseOptions<T = unknown> {
+	loading: Pick<SileoOptions, "title" | "icon">;
+	success: SileoOptions | ((data: T) => SileoOptions);
+	error: SileoOptions | ((err: unknown) => SileoOptions);
+	action?: SileoOptions | ((data: T) => SileoOptions);
 }
 
 export const sileo = {
-	show: (opts: ToastOptions) => createToast(opts).id,
-	success: (opts: ToastOptions) =>
+	show: (opts: SileoOptions) => createToast(opts).id,
+	success: (opts: SileoOptions) =>
 		createToast({ ...opts, state: "success" }).id,
-	error: (opts: ToastOptions) => createToast({ ...opts, state: "error" }).id,
-	warning: (opts: ToastOptions) =>
+	error: (opts: SileoOptions) => createToast({ ...opts, state: "error" }).id,
+	warning: (opts: SileoOptions) =>
 		createToast({ ...opts, state: "warning" }).id,
-	info: (opts: ToastOptions) => createToast({ ...opts, state: "info" }).id,
-	action: (opts: ToastOptions) => createToast({ ...opts, state: "action" }).id,
+	info: (opts: SileoOptions) => createToast({ ...opts, state: "info" }).id,
+	action: (opts: SileoOptions) => createToast({ ...opts, state: "action" }).id,
 
 	promise: <T,>(
 		promise: Promise<T> | (() => Promise<T>),
-		opts: ToastPromiseOptions<T>,
+		opts: SileoPromiseOptions<T>,
 	): Promise<T> => {
 		const { id } = createToast({
 			...opts.loading,
@@ -239,7 +207,7 @@ export const sileo = {
 
 	dismiss: dismissToast,
 
-	clear: (position?: ToastPosition) =>
+	clear: (position?: SileoPosition) =>
 		store.update((prev) =>
 			position ? prev.filter((t) => t.position !== position) : [],
 		),
@@ -252,8 +220,8 @@ export function Toaster({
 	position = "top-right",
 	offset,
 	options,
-}: ToasterProps) {
-	const [toasts, setToasts] = useState<ToastItem[]>(store.toasts);
+}: SileoToasterProps) {
+	const [toasts, setToasts] = useState<SileoItem[]>(store.toasts);
 	const [activeId, setActiveId] = useState<string>();
 
 	// Refs - consolidated
@@ -283,7 +251,7 @@ export function Toaster({
 		timersRef.current.clear();
 	}, []);
 
-	const schedule = useCallback((items: ToastItem[]) => {
+	const schedule = useCallback((items: SileoItem[]) => {
 		if (hoverRef.current) return;
 
 		for (const item of items) {
@@ -303,7 +271,7 @@ export function Toaster({
 
 	// Subscribe to store changes
 	useEffect(() => {
-		const listener: ToastListener = (next) => setToasts(next);
+		const listener: SileoListener = (next) => setToasts(next);
 		store.listeners.add(listener);
 		return () => {
 			store.listeners.delete(listener);
@@ -315,25 +283,28 @@ export function Toaster({
 	useEffect(() => {
 		listRef.current = toasts;
 
-		// Clean up timers for removed toasts
+		// Clean up timers and cached handlers for removed toasts
 		const toastKeys = new Set(toasts.map(timeoutKey));
+		const toastIds = new Set(toasts.map((t) => t.id));
 		for (const [key, timer] of timersRef.current) {
 			if (!toastKeys.has(key)) {
 				clearTimeout(timer);
 				timersRef.current.delete(key);
 			}
 		}
+		for (const id of handlersCache.current.keys()) {
+			if (!toastIds.has(id)) handlersCache.current.delete(id);
+		}
 
 		schedule(toasts);
 	}, [toasts, schedule]);
 
-	// Stable handler refs
 	const handleMouseEnterRef =
 		useRef<MouseEventHandler<HTMLButtonElement>>(null);
 	const handleMouseLeaveRef =
 		useRef<MouseEventHandler<HTMLButtonElement>>(null);
 
-	const handleMouseEnter = useCallback<
+	handleMouseEnterRef.current = useCallback<
 		MouseEventHandler<HTMLButtonElement>
 	>(() => {
 		if (hoverRef.current) return;
@@ -341,16 +312,13 @@ export function Toaster({
 		clearAllTimers();
 	}, [clearAllTimers]);
 
-	const handleMouseLeave = useCallback<
+	handleMouseLeaveRef.current = useCallback<
 		MouseEventHandler<HTMLButtonElement>
 	>(() => {
 		if (!hoverRef.current) return;
 		hoverRef.current = false;
 		schedule(listRef.current);
 	}, [schedule]);
-
-	handleMouseEnterRef.current = handleMouseEnter;
-	handleMouseLeaveRef.current = handleMouseLeave;
 
 	// Get latest toast ID
 	const latest = useMemo(() => {
@@ -389,7 +357,7 @@ export function Toaster({
 
 	// Viewport style computation - memoized
 	const getViewportStyle = useCallback(
-		(pos: ToastPosition): CSSProperties | undefined => {
+		(pos: SileoPosition): CSSProperties | undefined => {
 			if (offset === undefined) return undefined;
 
 			const o =
@@ -398,7 +366,7 @@ export function Toaster({
 					: { top: offset, right: offset, bottom: offset, left: offset };
 
 			const s: CSSProperties = {};
-			const px = (v: ToasterOffsetValue) =>
+			const px = (v: SileoOffsetValue) =>
 				typeof v === "number" ? `${v}px` : v;
 
 			if (pos.startsWith("top") && o.top) s.top = px(o.top);
@@ -413,7 +381,7 @@ export function Toaster({
 
 	// Group toasts by position - optimized
 	const byPosition = useMemo(() => {
-		const map = {} as Partial<Record<ToastPosition, ToastItem[]>>;
+		const map = {} as Partial<Record<SileoPosition, SileoItem[]>>;
 		for (const t of toasts) {
 			const pos = t.position ?? position;
 			const arr = map[pos];
@@ -429,16 +397,12 @@ export function Toaster({
 	return (
 		<>
 			{children}
-			{TOAST_POSITIONS.map((pos) => {
+			{SILEO_POSITIONS.map((pos) => {
 				const items = byPosition[pos];
 				if (!items?.length) return null;
 
-				const pill = pos.includes("right")
-					? "right"
-					: pos.includes("center")
-						? "center"
-						: "left";
-				const expand = pos.startsWith("top") ? "bottom" : "top";
+				const pill = pillAlign(pos);
+				const expand = expandDir(pos);
 
 				return (
 					<section

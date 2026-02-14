@@ -1,5 +1,3 @@
-"use client";
-
 import {
 	ArrowRightIcon,
 	CheckIcon,
@@ -34,20 +32,9 @@ const MIN_EXPAND_RATIO = 2.25;
 const SWAP_COLLAPSE_MS = 200;
 const HEADER_EXIT_MS = 150;
 
-type State = "success" | "loading" | "error" | "warning" | "info" | "action";
-export type SileoState = State;
+import type { SileoButton, SileoState, SileoStyles } from "./types";
 
-export interface SileoStyles {
-	title?: string;
-	description?: string;
-	badge?: string;
-	button?: string;
-}
-
-export interface SileoButton {
-	title: string;
-	onClick: () => void;
-}
+type State = SileoState;
 
 interface View {
 	title?: string;
@@ -94,6 +81,44 @@ const STATE_ICON: Record<State, ReactNode> = {
 	info: <LifeBuoyIcon size={16} />,
 	action: <ArrowRightIcon size={16} />,
 };
+
+/* ----------------------------- Sub-components ----------------------------- */
+
+const HeaderInner = memo(function HeaderInner({
+	innerRef,
+	layer,
+	isExiting,
+}: {
+	innerRef?: React.RefObject<HTMLDivElement | null>;
+	layer: { key: string; view: View };
+	isExiting?: boolean;
+}) {
+	const { view } = layer;
+	return (
+		<div
+			ref={innerRef}
+			key={layer.key}
+			data-sileo-header-inner
+			data-layer={isExiting ? "prev" : "current"}
+			data-exiting={isExiting || undefined}
+		>
+			<div
+				data-sileo-badge
+				data-state={view.state}
+				className={view.styles?.badge}
+			>
+				{view.icon ?? STATE_ICON[view.state]}
+			</div>
+			<span
+				data-sileo-title
+				data-state={view.state}
+				className={view.styles?.title}
+			>
+				{view.title}
+			</span>
+		</div>
+	);
+});
 
 /* ----------------------------- Memoised Defs ------------------------------ */
 /* The gooey filter <defs> never changes after mount — memoising it prevents
@@ -160,7 +185,7 @@ export const Sileo = memo(function Sileo({
 	);
 
 	const [view, setView] = useState<View>(next);
-	const [applied, setApplied] = useState(refreshKey);
+	const [_, setApplied] = useState(refreshKey);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [ready, setReady] = useState(false);
 	const [pillWidth, setPillWidth] = useState(0);
@@ -220,7 +245,7 @@ export const Sileo = memo(function Sileo({
 		const ro = new ResizeObserver(measure);
 		ro.observe(el);
 		return () => ro.disconnect();
-	}, [headerLayer.current.key]);
+	}, []);
 
 	useLayoutEffect(() => {
 		if (!hasDesc) {
@@ -350,14 +375,7 @@ export const Sileo = memo(function Sileo({
 			if (autoExpandRef.current) clearTimeout(autoExpandRef.current);
 			if (autoCollapseRef.current) clearTimeout(autoCollapseRef.current);
 		};
-	}, [
-		autoCollapseDelayMs,
-		autoExpandDelayMs,
-		hasDesc,
-		allowExpand,
-		exiting,
-		applied,
-	]);
+	}, [autoCollapseDelayMs, autoExpandDelayMs, hasDesc, allowExpand, exiting]);
 
 	/* ------------------------------ Derived values ---------------------------- */
 
@@ -389,34 +407,27 @@ export const Sileo = memo(function Sileo({
 
 	/* ------------------------------- Inline styles ---------------------------- */
 
-	const viewport = useMemo<CSSProperties>(
-		() => ({ height: open ? expanded : HEIGHT }),
-		[open, expanded],
-	);
-	const pill = useMemo<CSSProperties>(
-		() => ({
-			transform: `scaleY(${open ? 1 : HEIGHT / expanded})`,
-			width: resolvedPillWidth,
-			height: open ? expanded - 5 : expanded,
-		}),
-		[open, expanded, resolvedPillWidth],
-	);
-	const body = useMemo<CSSProperties>(
-		() => ({ transform: `scaleY(${open ? 1 : 0})`, opacity: open ? 1 : 0 }),
-		[open],
-	);
-	const header = useMemo(
-		() => ({
-			left: pillX,
-			transform: `translateY(${open ? (expand === "bottom" ? 3 : -3) : 0}px) scale(${open ? 0.9 : 1})`,
-			"--sileo-pill-width": `${resolvedPillWidth}px`,
-		}),
-		[pillX, open, expand, resolvedPillWidth],
-	);
-	const contentStyle = useMemo<CSSProperties>(
-		() => ({ opacity: open ? 1 : 0 }),
-		[open],
-	);
+	const css = useMemo(() => {
+		const yShift = open ? (expand === "bottom" ? 3 : -3) : 0;
+		return {
+			viewport: { height: open ? expanded : HEIGHT } as CSSProperties,
+			pill: {
+				transform: `scaleY(${open ? 1 : HEIGHT / expanded})`,
+				width: resolvedPillWidth,
+				height: open ? expanded - 5 : expanded,
+			} as CSSProperties,
+			body: {
+				transform: `scaleY(${open ? 1 : 0})`,
+				opacity: open ? 1 : 0,
+			} as CSSProperties,
+			header: {
+				left: pillX,
+				transform: `translateY(${yShift}px) scale(${open ? 0.9 : 1})`,
+				"--sileo-pill-width": `${resolvedPillWidth}px`,
+			} as CSSProperties,
+			content: { opacity: open ? 1 : 0 } as CSSProperties,
+		};
+	}, [open, expanded, resolvedPillWidth, pillX, expand]);
 
 	/* -------------------------------- Handlers -------------------------------- */
 
@@ -469,7 +480,7 @@ export const Sileo = memo(function Sileo({
 			data-position={position}
 			data-state={view.state}
 			className={className}
-			style={viewport}
+			style={css.viewport}
 			onMouseEnter={handleEnter}
 			onMouseLeave={handleLeave}
 			onTransitionEnd={handleTransitionEnd}
@@ -491,7 +502,7 @@ export const Sileo = memo(function Sileo({
 							rx={resolvedRoundness}
 							ry={resolvedRoundness}
 							fill={view.fill}
-							style={pill}
+							style={css.pill}
 						/>
 						<rect
 							data-sileo-body
@@ -501,60 +512,23 @@ export const Sileo = memo(function Sileo({
 							rx={resolvedRoundness}
 							ry={resolvedRoundness}
 							fill={view.fill}
-							style={body}
+							style={css.body}
 						/>
 					</g>
 				</svg>
 			</div>
 
 			{/* Header with morphing content */}
-			<div ref={headerRef} data-sileo-header data-edge={expand} style={header}>
+			<div
+				ref={headerRef}
+				data-sileo-header
+				data-edge={expand}
+				style={css.header}
+			>
 				<div data-sileo-header-stack>
-					<div
-						ref={innerRef}
-						key={headerLayer.current.key}
-						data-sileo-header-inner
-						data-layer="current"
-					>
-						<div
-							data-sileo-badge
-							data-state={headerLayer.current.view.state}
-							className={headerLayer.current.view.styles?.badge}
-						>
-							{headerLayer.current.view.icon ??
-								STATE_ICON[headerLayer.current.view.state]}
-						</div>
-						<span
-							data-sileo-title
-							data-state={headerLayer.current.view.state}
-							className={headerLayer.current.view.styles?.title}
-						>
-							{headerLayer.current.view.title}
-						</span>
-					</div>
+					<HeaderInner innerRef={innerRef} layer={headerLayer.current} />
 					{headerLayer.prev && (
-						<div
-							key={headerLayer.prev.key}
-							data-sileo-header-inner
-							data-layer="prev"
-							data-exiting="true"
-						>
-							<div
-								data-sileo-badge
-								data-state={headerLayer.prev.view.state}
-								className={headerLayer.prev.view.styles?.badge}
-							>
-								{headerLayer.prev.view.icon ??
-									STATE_ICON[headerLayer.prev.view.state]}
-							</div>
-							<span
-								data-sileo-title
-								data-state={headerLayer.prev.view.state}
-								className={headerLayer.prev.view.styles?.title}
-							>
-								{headerLayer.prev.view.title}
-							</span>
-						</div>
+						<HeaderInner layer={headerLayer.prev} isExiting />
 					)}
 				</div>
 			</div>
@@ -564,7 +538,7 @@ export const Sileo = memo(function Sileo({
 					data-sileo-content
 					data-edge={expand}
 					data-visible={open}
-					style={contentStyle}
+					style={css.content}
 				>
 					<div
 						ref={contentRef}

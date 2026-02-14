@@ -1,27 +1,41 @@
 {
 	"name": "sileo",
 	"version": "0.0.1",
-	"description": "A lightweight toast notification library for React",
+	"description": "A physics based toast notification library for react.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/hiaaryan/sileo.git"
 	},
-	"main": "./index.ts",
-	"types": "./index.ts",
-	"sideEffects": [
-		"./sileo.css"
-	],
 	"exports": {
-		".": "./index.ts",
-		"./sileo": "./sileo.tsx",
-		"./sileo.css": "./sileo.css",
-		"./toast": "./toast.tsx"
+		".": {
+			"import": {
+				"types": "./dist/index.d.mts",
+				"default": "./dist/index.mjs"
+			},
+			"require": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"default": "./dist/index.js"
+		},
+		"./dist/styles.css": "./dist/styles.css"
 	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"files": [
-		"sileo.tsx",
-		"toast.tsx",
-		"index.ts",
-		"sileo.css"
-	]
+		"dist"
+	],
+	"scripts": {
+		"build": "rm -rf dist && bunchee && cp src/sileo.css dist/styles.css",
+		"dev": "bunchee --watch"
+	},
+	"peerDependencies": {
+		"react": ">=18",
+		"react-dom": ">=18",
+		"lucide-react": ">=0.300"
+	},
+	"devDependencies": {
+		"bunchee": "^6.9.4"
+	}
 }
