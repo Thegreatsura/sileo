@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Sileo</h1>
-  <p>An opinionated, physics-based toast notifications for React.</p>
+  <p>An opinionated, physics-based toast component for React.</p>
   <p><a href="https://sileo.aaryan.design">Try Out</a> &nbsp; / &nbsp; <a href="https://sileo.aaryan.design/docs">Docs</a></p>
   <video src="https://github.com/user-attachments/assets/a292d310-9189-490a-9f9d-d0a1d09defce"></video>
 </div>
