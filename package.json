@@ -1,7 +1,7 @@
 {
 	"name": "sileo",
-	"version": "0.0.2",
-	"description": "A physics based toast notification library for react.",
+	"version": "0.0.3",
+	"description": "An opinionated, physics based toast notification library for react.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
