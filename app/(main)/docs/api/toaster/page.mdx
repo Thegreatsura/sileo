@@ -9,14 +9,19 @@ import { Toaster } from "sileo";
 ```
 
 <Table
-	headers={["Prop", "Type", "Default", "Description"]}
-	rows={[
-		["children", "ReactNode", "—", "App content to render alongside toasts"],
-		["position", "SileoPosition", "\"top-right\"", "Default position for all toasts"],
-		["offset", "number | string | object", "—", "Distance from viewport edges"],
-		["options", "Partial<SileoOptions>", "—", "Default options merged into every toast"],
-		["theme", "\"light\" | \"dark\" | \"system\"", "—", "Automatically sets fill based on color scheme. system follows the OS preference"],
-	]}
+  headers={["Prop", "Type", "Default", "Description"]}
+  rows={[
+    ["children", "ReactNode", "—", "App content to render alongside toasts"],
+    ["position", "SileoPosition", '"top-right"', "Default position for all toasts"],
+    ["offset", "number | string | object", "—", "Distance from viewport edges"],
+    ["options", "Partial<SileoOptions>", "—", "Default options merged into every toast"],
+    [
+      "theme",
+      '"light" | "dark" | "system"',
+      "—",
+      "Automatically sets fill based on color scheme. system follows the OS preference",
+    ],
+  ]}
 />
 
 ## Offset
@@ -48,10 +53,5 @@ Set global defaults that apply to every toast.
 
 ```tsx
 type SileoPosition =
-  | "top-left"
-  | "top-center"
-  | "top-right"
-  | "bottom-left"
-  | "bottom-center"
-  | "bottom-right";
+  "top-left" | "top-center" | "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
 ```

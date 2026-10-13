@@ -15,9 +15,9 @@ export const AUTO_EXPAND_DELAY = DEFAULT_TOAST_DURATION * 0.025;
 export const AUTO_COLLAPSE_DELAY = DEFAULT_TOAST_DURATION - 2000;
 
 export const SPRING = {
-	type: "spring" as const,
-	bounce: 0.25,
-	duration: DURATION_S,
+  type: "spring" as const,
+  bounce: 0.25,
+  duration: DURATION_S,
 };
 
 /* --------------------------------- Render --------------------------------- */

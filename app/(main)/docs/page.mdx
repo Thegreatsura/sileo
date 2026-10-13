@@ -3,8 +3,8 @@ import { CodePreview } from "@/components/code-preview";
 export const fireToastCode = `sileo.success({ title: "Changes saved" });
 
 sileo.error({
-  title: "Something went wrong",
-  description: "Please try again later.",
+title: "Something went wrong",
+description: "Please try again later.",
 });
 
 sileo.warning({ title: "Storage almost full" });
@@ -56,32 +56,26 @@ export default function App() {
 ## Fire a Toast
 
 <CodePreview
-	actions={[
-		{ label: "Success", id: "success" },
-		{ label: "Error", id: "error" },
-		{ label: "Warning", id: "warning" },
-		{ label: "Info", id: "info" },
-	]}
-	code={fireToastCode}
+  actions={[
+    { label: "Success", id: "success" },
+    { label: "Error", id: "error" },
+    { label: "Warning", id: "warning" },
+    { label: "Info", id: "info" },
+  ]}
+  code={fireToastCode}
 />
 
 ## Action Toast
 
 Toasts can include a button for user interaction.
 
-<CodePreview
-	actions={[{ label: "Try it", id: "action" }]}
-	code={actionCode}
-/>
+<CodePreview actions={[{ label: "Try it", id: "action" }]} code={actionCode} />
 
 ## Promise Toast
 
 Chain loading, success, and error states from a single promise.
 
-<CodePreview
-	actions={[{ label: "Try it", id: "promise" }]}
-	code={promiseCode}
-/>
+<CodePreview actions={[{ label: "Try it", id: "promise" }]} code={promiseCode} />
 
 The promise method returns the original promise, so you can chain further.
 
@@ -90,7 +84,7 @@ The promise method returns the original promise, so you can chain further.
 sileo supports six positions. Set it on the `Toaster` as a default, or override per-toast.
 
 ```tsx
-<Toaster position="top-right" />
+<Toaster position="top-right" />;
 
 sileo.success({
   title: "Saved",

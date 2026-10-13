@@ -7,12 +7,12 @@ export const fillCode = `sileo.success({
 });
 
 sileo.success({
-  title: "Booking confirmed",
-  fill: "black",
-  styles: {
-    title: "text-white!",
-    description: "text-white/75!",
-  },
+title: "Booking confirmed",
+fill: "black",
+styles: {
+title: "text-white!",
+description: "text-white/75!",
+},
 });`;
 
 export const styleOverrideCode = `sileo.action({
@@ -29,8 +29,8 @@ export const styleOverrideCode = `sileo.action({
 export const customIconCode = `import { Rocket } from "lucide-react";
 
 sileo.success({
-  title: "Deployed",
-  icon: <Rocket className="size-3.5" />,
+title: "Deployed",
+icon: <Rocket className="size-3.5" />,
 });`;
 
 export const customDescCode = `sileo.success({
@@ -64,8 +64,8 @@ export const roundnessCode = `sileo.success({
 });
 
 sileo.success({
-  title: "Fully round",
-  roundness: 16,
+title: "Fully round",
+roundness: 16,
 });`;
 
 export const autopilotCode = `sileo.success({
@@ -75,12 +75,12 @@ export const autopilotCode = `sileo.success({
 });
 
 sileo.success({
-  title: "Custom timing",
-  description: "Expand after 500ms, collapse after 3s.",
-  autopilot: {
-    expand: 500,
-    collapse: 3000,
-  },
+title: "Custom timing",
+description: "Expand after 500ms, collapse after 3s.",
+autopilot: {
+expand: 500,
+collapse: 3000,
+},
 });`;
 
 export const dismissCode = `const id = sileo.success({ title: "Dismissable" });
@@ -116,69 +116,57 @@ sileo is designed to look great out of the box. When you need to customize, ther
 The `fill` prop sets the SVG background color of the toast. The default is `"#FFFFFF"`. Set it to a dark color like `"#171717"` or `"black"` to create a dark toast — just make sure to pair it with light text via `styles`.
 
 <CodePreview
-	actions={[
-		{ label: "Dark accent", id: "fill-accent" },
-		{ label: "Full dark", id: "fill-dark" },
-	]}
-	code={fillCode}
+  actions={[
+    { label: "Dark accent", id: "fill-accent" },
+    { label: "Full dark", id: "fill-dark" },
+  ]}
+  code={fillCode}
 />
 
 ## Style Overrides
 
 The `styles` prop lets you override classes on individual sub-elements. Use Tailwind's `!` modifier to ensure specificity.
 
-<CodePreview
-	actions={[{ label: "Try it", id: "style-override" }]}
-	code={styleOverrideCode}
-/>
+<CodePreview actions={[{ label: "Try it", id: "style-override" }]} code={styleOverrideCode} />
 
 ### Available Keys
 
 <Table
-	headers={["Key", "Element", "Selector"]}
-	rows={[
-		["title", "The heading text", "[data-sileo-title]"],
-		["description", "The body/description area", "[data-sileo-description]"],
-		["badge", "The icon badge circle", "[data-sileo-badge]"],
-		["button", "The action button", "[data-sileo-button]"],
-	]}
+  headers={["Key", "Element", "Selector"]}
+  rows={[
+    ["title", "The heading text", "[data-sileo-title]"],
+    ["description", "The body/description area", "[data-sileo-description]"],
+    ["badge", "The icon badge circle", "[data-sileo-badge]"],
+    ["button", "The action button", "[data-sileo-button]"],
+  ]}
 />
 
 ## Custom Icons
 
 Pass any React node as the `icon` prop to replace the default state icon.
 
-<CodePreview
-	actions={[{ label: "Try it", id: "custom-icon" }]}
-	code={customIconCode}
-/>
+<CodePreview actions={[{ label: "Try it", id: "custom-icon" }]} code={customIconCode} />
 
 ## Custom Description
 
 The `description` prop accepts JSX, so you can build rich toast content.
 
-<CodePreview
-	actions={[{ label: "Try it", id: "custom-description" }]}
-	code={customDescCode}
-/>
+<CodePreview actions={[{ label: "Try it", id: "custom-description" }]} code={customDescCode} />
 
 You can use any layout — stack multiple elements, add icons, or use your own components.
 
-<CodePreview
-	actions={[{ label: "Rich content", id: "rich-description" }]}
-	code={richDescCode}
-/>
+<CodePreview actions={[{ label: "Rich content", id: "rich-description" }]} code={richDescCode} />
 
 ## Roundness
 
 Control the border radius with the `roundness` prop (default `16`). Set it lower for sharper corners or higher for a rounder pill shape.
 
 <CodePreview
-	actions={[
-		{ label: "Sharp (12)", id: "roundness-sharp" },
-		{ label: "Round (16)", id: "roundness-round" },
-	]}
-	code={roundnessCode}
+  actions={[
+    { label: "Sharp (12)", id: "roundness-sharp" },
+    { label: "Round (16)", id: "roundness-round" },
+  ]}
+  code={roundnessCode}
 />
 
 > **Performance note:** Higher `roundness` values increase the SVG blur radius used for the gooey morph effect, which is more expensive to render. The recommended value is `16` for a good balance between aesthetics and performance.
@@ -191,11 +179,11 @@ By default, toasts auto-expand after a short delay and collapse before dismissin
 - `autopilot: { expand: ms, collapse: ms }` — custom timing for each phase
 
 <CodePreview
-	actions={[
-		{ label: "Disabled", id: "autopilot-off" },
-		{ label: "Custom timing", id: "autopilot-custom" },
-	]}
-	code={autopilotCode}
+  actions={[
+    { label: "Disabled", id: "autopilot-off" },
+    { label: "Custom timing", id: "autopilot-custom" },
+  ]}
+  code={autopilotCode}
 />
 
 ## Dismissing Toasts
@@ -203,12 +191,12 @@ By default, toasts auto-expand after a short delay and collapse before dismissin
 Use `sileo.dismiss(id)` to remove a specific toast, or `sileo.clear()` to remove all. You can also clear only toasts at a specific position.
 
 <CodePreview
-	actions={[
-		{ label: "Fire toast", id: "dismiss-fire" },
-		{ label: "Dismiss it", id: "dismiss-one" },
-		{ label: "Clear all", id: "dismiss-all" },
-	]}
-	code={dismissCode}
+  actions={[
+    { label: "Fire toast", id: "dismiss-fire" },
+    { label: "Dismiss it", id: "dismiss-one" },
+    { label: "Clear all", id: "dismiss-all" },
+  ]}
+  code={dismissCode}
 />
 
 ## Global Defaults

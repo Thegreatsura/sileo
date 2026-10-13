@@ -43,3 +43,6 @@ next-env.d.ts
 # package workspace
 /packages/*/dist
 /packages/*/node_modules
+
+# local, per-machine Claude settings
+.claude/settings.local.json

@@ -11,36 +11,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  package:
-    name: Package
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/sileo
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: oven-sh/setup-bun@v2
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Build
-        run: bun run build
-
-      - name: Verify build
-        run: ls -la dist/
-
-  site:
-    name: Site
+  # Installing anything here needs the Hugeicons licence, and GitHub rightly
+  # withholds secrets from forked pull requests. Running anyway would mean a red
+  # install step on every outside contribution, so those are skipped instead.
+  build:
+    name: Build
+    if: >-
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
 
+      - name: Authenticate private registry
+        run: |
+          if [ -n "$NPM_RC" ]; then printf '%s\n' "$NPM_RC" > ~/.npmrc; fi
+        env:
+          NPM_RC: ${{ secrets.NPM_RC }}
+
       - name: Install dependencies
         run: bun install
 
-      - name: Build
-        run: bun run build
+      # the package first, since the site imports its build output
+      - name: Build package
+        run: bun run --filter sileo build
+
+      - name: Verify package build
+        run: ls -la packages/sileo/dist/
+
+      - name: Build site
+        run: bun run next build

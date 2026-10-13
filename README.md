@@ -32,9 +32,9 @@ For detailed docs, click here: https://sileo.aaryan.design
 
 This repository holds both the package and the site that documents it.
 
-| Path              | What it is                                                         |
-| ----------------- | ------------------------------------------------------------------ |
-| `packages/sileo`  | The `sileo` npm package. Published on GitHub Release.              |
+| Path                                 | What it is                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `packages/sileo`                     | The `sileo` npm package. Published on GitHub Release.                                       |
 | `app`, `components`, `lib`, `public` | The Next.js site at [sileo.aaryan.design](https://sileo.aaryan.design), deployed by Vercel. |
 
 ```bash

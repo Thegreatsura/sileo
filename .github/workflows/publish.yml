@@ -20,6 +20,16 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org
 
+      # The site is a workspace member and depends on a licensed registry, and
+      # bun resolves the whole workspace even when installing from inside the
+      # package — so a release needs those credentials too. Safe here: a release
+      # is published by a maintainer, so this never runs from a fork.
+      - name: Authenticate private registry
+        run: |
+          if [ -n "$NPM_RC" ]; then printf '%s\n' "$NPM_RC" > ~/.npmrc; fi
+        env:
+          NPM_RC: ${{ secrets.NPM_RC }}
+
       - name: Install dependencies
         run: bun install
 
