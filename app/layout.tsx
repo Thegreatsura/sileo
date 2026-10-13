@@ -13,14 +13,9 @@ const mono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Sileo",
+	title: "sileo",
 	description:
 		"A tiny, beautiful, physics-based toast component for React. SVG morphing and spring animations.",
-	icons: {
-		apple: "/sileo.png",
-		icon: "/sileo.ico",
-		shortcut: "/sileo.ico",
-	},
 };
 
 export default function RootLayout({

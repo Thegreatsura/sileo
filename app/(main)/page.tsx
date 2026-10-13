@@ -31,7 +31,7 @@ export default function Home() {
 					transition={{ duration: 0.6, ease }}
 					className="text-7xl sm:text-8xl font-semibold tracking-tighter"
 				>
-					Sileo<span className="text-neutral-300">.</span>
+					sileo<span className="text-neutral-300">.</span>
 				</motion.h1>
 
 				<motion.p

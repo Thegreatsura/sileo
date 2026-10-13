@@ -38,7 +38,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
 
 				<footer className="py-6 flex items-center justify-between border-t border-border">
 					<span className="text-xs text-muted-foreground">
-						Sileo — MIT License
+						sileo — MIT License
 					</span>
 					<Link
 						href="/play"

@@ -41,7 +41,7 @@ export function Nav({ className, dark, onToggleDark }: NavProps) {
 					href="/"
 					className="flex items-center gap-2.5 hover:opacity-70 transition-opacity"
 				>
-					<span className="text-sm font-semibold tracking-tight">Sileo</span>
+					<span className="text-sm font-semibold tracking-tight">sileo</span>
 				</Link>
 
 				{/* Desktop links */}

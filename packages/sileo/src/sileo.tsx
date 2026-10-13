@@ -582,7 +582,7 @@ export const Sileo = memo(function Sileo({
 		>
 			<div data-sileo-canvas data-edge={expand} style={canvasStyle}>
 				<svg data-sileo-svg width={WIDTH} height={svgHeight} viewBox={viewBox}>
-					<title>Sileo Notification</title>
+					<title>sileo notification</title>
 					<GooeyDefs filterId={filterId} blur={blur} />
 					<motion.rect
 						data-sileo-pill
