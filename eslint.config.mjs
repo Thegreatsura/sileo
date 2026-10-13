@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The npm package has its own build; it is not part of the site.
+    "packages/**",
   ]),
 ]);
 
